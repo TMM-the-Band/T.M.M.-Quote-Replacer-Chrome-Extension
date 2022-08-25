@@ -9,10 +9,20 @@
                 "*://*/*"
             ],
             "js": [
+                "lazy_load_rusher.js"
+            ],
+            "all_frames": true,
+            "run_at": "document_start"
+        },
+        {
+            "matches": [
+                "*://*/*"
+            ],
+            "js": [
                 "quote_replacer.js"
             ],
             "all_frames": true,
-            "run_at": "document_end"
+            "run_at": "document_idle"
         }
     ]
 }
