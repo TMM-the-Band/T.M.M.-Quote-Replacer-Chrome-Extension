@@ -95,7 +95,7 @@ function getLyrics(numLines) {
     // If the song doesn't contain enough lyrics, then return all its lyrics
     // and call the function again to get more lyrics
     if (songLength < numLines) {
-        return tmm_lyrics.songs[songIdx].concat(getLyrics(numLines - songLength));
+        return tmm_lyrics.songs[songIdx].lyrics.concat(getLyrics(numLines - songLength));
     }
     // Otherwise return a random subsequence of the lyrics
     else {
@@ -103,100 +103,111 @@ function getLyrics(numLines) {
     }
 }
 
-/* 
- Websites such as https://dbknews.com that were made with WordPress and use `wp-rocket` will break
- Might be able to get around this in the future by appending `?nowprocket` to their URLs, but
- the new Manifest v3 Chrome Extensions `declarativeNetRequest` makes that very difficult.
- */
-if (document.body.innerHTML.indexOf("wp-rocket") === -1 &&
-    document.body.innerHTML.indexOf("wp-content") === -1) {
+function replaceQuotes() {
+    /* 
+     Websites such as https://dbknews.com that were made with WordPress and use `wp-rocket` will break
+     Might be able to get around this in the future by appending `?nowprocket` to their URLs, but
+     the new Manifest v3 Chrome Extensions `declarativeNetRequest` makes that very difficult.
 
-    // Get text from every possible element that could contain text
-    const all_text = document.querySelectorAll('h1, h2, h3, h4, h5, p, caption')
+     Websites such as https://parade.com/937586/parade/life-quotes/ that use mysterious <phoenix-___> tags
+     also tend to break.
+     */
+    if (document.body.innerHTML.indexOf("wp-rocket") === -1 &&
+        document.body.innerHTML.indexOf("wp-content") === -1 &&
+        document.body.innerHTML.indexOf("phoenix-") === -1) {
 
-    // Regex for HTML tags
-    const htmlReg = /<[^<]+>/gd;
-    // Regex for quoted phrases
-    const quoteReg = /(?:["“”][^"“”]*["“”]|^[^"“”]*$)/gd;
+        // Get text from every possible element that could contain text
+        const all_text = document.querySelectorAll('h1, h2, h3, h4, h5, p, caption, li')
 
-    for (let i = 0; i < all_text.length; i++) {
-        // Array of indices to avoid
-        let tagIndices = [];
-        // Flattened array of indices of where quotes begin and end
-        let quoteIndices = [0];
+        // Regex for HTML tags
+        const htmlReg = /<[^<]+>/gd;
+        // Regex for quoted phrases
+        const quoteReg = /(?:["“”][^<>"“”]*["“”]|^[^"“”]*$)/gd;
 
-        // Find all the start and end indices of HTML tags
-        while ((tagResult = htmlReg.exec(all_text[i].innerHTML)) !== null) {
-            tagIndices = tagIndices.concat(tagResult.indices);
-        }
+        for (let i = 0; i < all_text.length; i++) {
+            // Array of indices to avoid
+            let tagIndices = [];
+            // Flattened array of indices of where quotes begin and end
+            let quoteIndices = [0];
 
-        // Find all the start and end indices of the quotes that aren't inside HTML tags
-        while ((quoteResult = quoteReg.exec(all_text[i].innerHTML)) !== null) {
-            // First determine if the quoted string is in an HTML tag
-            let inTag = false;
-            for (let j = 0; j < tagIndices.length; j++) {
-                if (tagIndices[j][0] < quoteResult.indices[0][0] && tagIndices[j][1] > quoteResult.indices[0][1]) {
-                    inTag = true;
-                    break;
+            // Find all the start and end indices of HTML tags
+            while ((tagResult = htmlReg.exec(all_text[i].innerHTML)) !== null) {
+                tagIndices = tagIndices.concat(tagResult.indices);
+            }
+
+            // Find all the start and end indices of the quotes that aren't inside HTML tags
+            while ((quoteResult = quoteReg.exec(all_text[i].innerHTML)) !== null) {
+                // First determine if the quoted string is in an HTML tag
+                let inTag = false;
+                for (let j = 0; j < tagIndices.length; j++) {
+                    if (tagIndices[j][0] < quoteResult.indices[0][0] && tagIndices[j][1] > quoteResult.indices[0][1]) {
+                        inTag = true;
+                        break;
+                    }
+                }
+
+                // Record its indicies if it isn't part of an HTML tag
+                if (!inTag) {
+                    quoteIndices = quoteIndices.concat(quoteResult.indices).flat();
                 }
             }
 
-            // Record its indicies if it isn't part of an HTML tag
-            if (!inTag) {
-                quoteIndices = quoteIndices.concat(quoteResult.indices).flat();
+            // Pad the array (if necessary) with first and/or last string index
+            // to ensure that the entire string will be sliced
+            if (quoteIndices[0] != 0) {
+                quoteIndices = [0].concat(quoteIndices);
             }
-        }
-
-        // Pad the array (if necessary) with first and/or last string index
-        // to ensure that the entire string will be sliced
-        if (quoteIndices[0] != 0) {
-            quoteIndices = [0].concat(quoteIndices);
-        }
-        if (quoteIndices[-1] != all_text[i].innerHTML.length - 1) {
-            quoteIndices = quoteIndices.concat([all_text[i].innerHTML.length]);
-        }
-
-
-        // If there are quotes, replace the quoted phrases with T.M.M. lyrics
-        if (quoteIndices.length > 0) {
-
-            // Slice up the string to separate the quoted sections from the non-quoted sections
-            let slices = []
-            //let slices = [all_text[i].innerHTML.slice(0, quoteIndices[0])]
-            for (let j = 0; j < quoteIndices.length - 1; j++) {
-                slices = slices.concat(all_text[i].innerHTML.slice(quoteIndices[j], quoteIndices[j + 1]));
+            if (quoteIndices[-1] != all_text[i].innerHTML.length - 1) {
+                quoteIndices = quoteIndices.concat([all_text[i].innerHTML.length]);
             }
 
-            // Keep track of the slice indices that we'll need to replace
-            let quoteSliceIndices = []
-            for (let j = 0; j < slices.length; j++) {
-                if (slices[j].charAt(0) === "\"" || slices[j].charAt(0) === "\“") {
-                    quoteSliceIndices = quoteSliceIndices.concat(j);
+
+            // If there are quotes, replace the quoted phrases with T.M.M. lyrics
+            if (quoteIndices.length > 0) {
+
+                // Slice up the string to separate the quoted sections from the non-quoted sections
+                let slices = []
+                //let slices = [all_text[i].innerHTML.slice(0, quoteIndices[0])]
+                for (let j = 0; j < quoteIndices.length - 1; j++) {
+                    slices = slices.concat(all_text[i].innerHTML.slice(quoteIndices[j], quoteIndices[j + 1]));
+                }
+
+                // Keep track of the slice indices that we'll need to replace
+                let quoteSliceIndices = []
+                for (let j = 0; j < slices.length; j++) {
+                    if (slices[j].charAt(0) === "\"" || slices[j].charAt(0) === "\“") {
+                        quoteSliceIndices = quoteSliceIndices.concat(j);
+                    }
+                }
+
+                // Get the appropriate number of lyrics to replace the quotes with
+                lyrics = getLyrics(quoteSliceIndices.length)
+
+                // Replace any slice that begins with a quotation mark
+                for (let j = 0; j < quoteSliceIndices.length; j++) {
+                    // Add the T.M.M. lyric, but match the punctuation of the original quote
+                    let penultChar = ""
+                    if (".,?!".indexOf(slices[quoteSliceIndices[j]].charAt(slices[quoteSliceIndices[j]].length - 2)) > -1) {
+                        penultChar = slices[quoteSliceIndices[j]].charAt(slices[quoteSliceIndices[j]].length - 2);
+                    }
+                    // Handle the fancy quotes that some news sites use
+                    let rightQuote = (slices[quoteSliceIndices[j]].charAt(0) === "\"" ? "\"" : "\“");
+                    let leftQuote = (slices[quoteSliceIndices[j]].charAt(0) === "\"" ? "\"" : "\”");
+
+                    slices[quoteSliceIndices[j]] = `${rightQuote}${lyrics[j]}${penultChar}${leftQuote}`;
+                }
+
+                // Reassemble the string
+                if (all_text[i].innerHTML !== slices.join("")) {
+                    console.log("Original: " + all_text[i].innerHTML + "\nNew (with T.M.M. lyrics): " + slices.join(""));
+                    all_text[i].innerHTML = slices.join("");
                 }
             }
-
-            // Get the appropriate number of lyrics to replace the quotes with
-            lyrics = getLyrics(quoteSliceIndices.length)
-
-            // Replace any slice that begins with a quotation mark
-            for (let j = 0; j < quoteSliceIndices.length; j++) {
-                // Add the T.M.M. lyric, but match the punctuation of the original quote
-                let penultChar = ""
-                if (".,?!".indexOf(slices[quoteSliceIndices[j]].charAt(slices[quoteSliceIndices[j]].length - 2)) > -1) {
-                    penultChar = slices[quoteSliceIndices[j]].charAt(slices[quoteSliceIndices[j]].length - 2);
-                }
-                // Handle the fancy quotes that some news sites use
-                let rightQuote = (slices[quoteSliceIndices[j]].charAt(0) === "\"" ? "\"" : "\“");
-                let leftQuote = (slices[quoteSliceIndices[j]].charAt(0) === "\"" ? "\"" : "\”");
-
-                slices[quoteSliceIndices[j]] = `${rightQuote}${lyrics[j]}${penultChar}${leftQuote}`;
-            }
-
-            // Reassemble the string
-            all_text[i].innerHTML = slices.join("");
         }
     }
+    else {
+        console.log("The T.M.M. Chrome Extension does not work on WordPress websites!");
+    }
 }
-else {
-    console.log("The T.M.M. Chrome Extension does not work on WordPress websites!");
-}
+
+replaceQuotes()
