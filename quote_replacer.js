@@ -970,7 +970,8 @@ const excludedStrings = [
     "nj.com",
     "static.foxnews.com",
     "static.politico.com",
-    "news.unl.edu"
+    "news.unl.edu",
+    "myslice"
 ];
 
 function getRandomInt(max) {
