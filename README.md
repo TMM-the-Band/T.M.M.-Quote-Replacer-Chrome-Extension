@@ -10,5 +10,6 @@ Currently, there isn't a good way to determine if a website is compatible with t
 
 ## TODO:
 - Fix problem preventing it from working with WordPress websites such as [dbknews.com](https://dbknews.com/) and other websites
-- Add the rest of the T.M.M. lyrics
+  - Or at least find an on-the-fly solution for deterimining if any website is compatible with the extension
+- Move the lyrics to their own JSON file
 - Maybe add a simple UI to make it easier to toggle
