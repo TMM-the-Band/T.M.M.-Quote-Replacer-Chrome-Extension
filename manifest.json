@@ -1,5 +1,5 @@
 {
-    "name": "T.M.M. Quotes",
+    "name": "T.M.M. Quote Replacer",
     "description": "Replaces any text on a webpage that is surrounded by quotes with a random T.M.M. lyric!",
     "version": "0.1",
     "manifest_version": 3,
