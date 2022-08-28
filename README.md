@@ -1,7 +1,7 @@
 # T.M.M. Quote Replacer Chrome Extension
 A Chrome Extension for replacing quotes on webpages with T.M.M. lyrics!
 
-To use/test this, clone the repository, go to _chrome://extensions_ in Chrome, click "Load Unpacked", and then select the cloned repo's directory. Then Chrome should display it as an extension that you can toggle.
+To use/test this, clone the repository, go to _chrome://extensions_ in Chrome, switch the toggle to enable Developer Mode, click "Load Unpacked", and then select the cloned repo's directory. Then Chrome should display it as an extension that you can toggle.
 
 ## Limitations:
 It currently works with most webpages, but it is incompatible with WordPress websites such as [dbknews.com](https://dbknews.com/) and a variety of other webpages. Thus, the extension will ignore websites that contain certain strings in their source. A message will be printed to the console any time such a website is encountered.
