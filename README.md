@@ -1,11 +1,11 @@
-# T.M.M. Quote Replacer Chrome Extension
-A Chrome Extension for replacing quotes on webpages with T.M.M. lyrics!
+# TMMifier Chrome Extension
+A Chrome Extension for swapping text surrouded by quotation marks with T.M.M. lyrics!
 
 To use/test this, clone the repository, go to _chrome://extensions_ in Chrome, switch the toggle to enable Developer Mode, click "Load Unpacked", and then select the cloned repo's directory. Then Chrome should display it as an extension that you can toggle.
 
-## Websites Recommended for use with the T.M.M. Quote Replacer
+## Websites Recommended for use with the TMMifier
 
-No issues with these websites have been encountered while using the T.M.M. Quote Replacer.
+No issues with these websites have been encountered while using the TMMifier.
 
 - [BBC.com](https://www.bbc.com/)
 - [The Guardian](https://www.theguardian.com/us)
